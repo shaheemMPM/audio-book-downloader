@@ -47,7 +47,14 @@ async function cleanupDirectory(directoryPath: string) {
 
 		for (const fileName of fileNames) {
 			const filePath = path.join(directoryPath, fileName);
-			await fsPromises.unlink(filePath);
+			const stats = await fsPromises.stat(filePath);
+
+			if (stats.isFile()) {
+				await fsPromises.unlink(filePath);
+			} else if (stats.isDirectory()) {
+				await cleanupDirectory(filePath);
+				await fsPromises.rmdir(filePath);
+			}
 		}
 	} catch (error) {
 		throw error;

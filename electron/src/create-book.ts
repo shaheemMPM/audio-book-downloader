@@ -1,13 +1,15 @@
 import { promises as fsPromises } from "fs";
+const { exec } = require("child_process");
 import path from "path";
 import os from "os";
 import util from "util";
 const ffmpeg = require("fluent-ffmpeg");
 
 const ffprobeAsync = util.promisify(ffmpeg.ffprobe);
+const execAsync = util.promisify(exec);
 
 import { directoryExists } from "./global";
-import { Chapter } from "./types";
+import { Chapter, YouTubeInfo } from "./types";
 
 function convertChapters(inputChapters: Chapter[]) {
 	const chapters = [];
@@ -55,11 +57,8 @@ async function createAudioBook(chapters: Chapter[]) {
 		const chapterData = convertChapters(chapters);
 
 		const rootDirectory = os.homedir();
-		const workingFilesPath = path.join(
-			rootDirectory,
-			"Audio Book Builder",
-			"WorkingFiles"
-		);
+		const audioBookBuilderPath = path.join(rootDirectory, "Audio Book Builder");
+		const workingFilesPath = path.join(audioBookBuilderPath, "WorkingFiles");
 		const metaDataPath = path.join(workingFilesPath, "data.json");
 
 		if (!(await directoryExists(metaDataPath))) {
@@ -67,7 +66,7 @@ async function createAudioBook(chapters: Chapter[]) {
 		}
 
 		const data = await fsPromises.readFile(metaDataPath, "utf-8");
-		const metaData = JSON.parse(data);
+		const metaData: YouTubeInfo = JSON.parse(data);
 
 		const audioMp4Path = metaData.audio;
 
@@ -113,6 +112,44 @@ async function createAudioBook(chapters: Chapter[]) {
 
 				command.output(mp3FileName).run();
 			});
+		}
+
+		const mp3Files = await fsPromises.readdir(mp3SegmentsPath);
+
+		const bookOutputPath = path.join(audioBookBuilderPath, metaData.title);
+		await createDirectoryIfNotExists(bookOutputPath);
+		await cleanupDirectory(bookOutputPath);
+
+		for (const mp3File of mp3Files) {
+			if (mp3File.endsWith(".mp3")) {
+				const inputFilePath = path.join(mp3SegmentsPath, mp3File);
+				const outputFilePath = path.join(bookOutputPath, mp3File);
+
+				// if (metaData.thumbnail) {
+				// 	const ffmpegCommand = `ffmpeg -i "${inputFilePath}" -i "${metaData.thumbnail}" -c copy -map 0 -map 1 "${outputFilePath}"`;
+				// 	const { error } = await execAsync(ffmpegCommand);
+				// 	if (error) {
+				// 		console.log("Error in thumbnail fix: ", error);
+				// 		throw new Error("Error adding cover art");
+				// 	}
+				// }
+
+				// if (metaData.author) {
+				// 	const ffmpegCommand = `ffmpeg -i "${inputFilePath}" -metadata title="${metaData.author}" -c:a copy "${outputFilePath}"`;
+				// 	const { error } = await execAsync(ffmpegCommand);
+				// 	if (error) {
+				// 		console.log("Error in author fix: ", error);
+				// 		throw new Error("Error adding artist metadata");
+				// 	}
+				// }
+
+				const ffmpegCommand = `ffmpeg -i "${inputFilePath}" -metadata album="${metaData.title}" -c:a copy "${outputFilePath}"`;
+				const { error: albumError } = await execAsync(ffmpegCommand);
+				if (albumError) {
+					console.log("Error in album fix: ", albumError);
+					throw new Error("Error adding album metadata");
+				}
+			}
 		}
 	} catch (error) {
 		throw error;
