@@ -1,0 +1,17 @@
+.logo {
+	height: 6em;
+	will-change: filter;
+	transition: 0.75s;
+}
+
+.logo.youtube:hover {
+	filter: drop-shadow(0 0 2em #f61c0d);
+}
+
+.logo.mp3:hover {
+	filter: drop-shadow(0 0 2em #5153ff);
+}
+
+.logo.mp4:hover {
+	filter: drop-shadow(0 0 2em #3c85eb);
+}

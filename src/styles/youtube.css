@@ -1,0 +1,47 @@
+.youtube-url-form {
+	gap: 8px;
+	margin: 50px auto 30px;
+	width: 70%;
+}
+
+.youtube-url-form input {
+	width: 100%;
+}
+
+.video-title-text {
+	text-align: center;
+	font-weight: 500;
+	font-size: 1.1rem;
+	margin: 10px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
+}
+
+.thumbnail-image {
+	max-height: 160px;
+	margin: 10px auto;
+	display: block;
+}
+
+.spinner-svg {
+	animation: spin 2s linear infinite;
+}
+
+.download-button {
+	margin: 20px auto;
+}
+
+.download-button:disabled {
+	opacity: 0.9 !important;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
