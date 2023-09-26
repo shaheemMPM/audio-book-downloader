@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Chapter } from "../types";
+import { Chapter, IpcResponse } from "../types";
 
 import PlusSquareWhite from "../assets/plus-square-white.svg";
+import SpinnerSvg from "../assets/spinner.svg";
 
 import "../styles/chapter.css";
 
@@ -10,6 +11,7 @@ function AddChapter() {
 	const navigateTo = useNavigate();
 
 	const [chapters, setChapters] = useState<Chapter[]>([]);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const handleAddChapter = () => {
 		setChapters((currentChapters) => [
@@ -33,6 +35,30 @@ function AddChapter() {
 			return newChapters;
 		});
 	};
+
+	const handleCreateAudioBook = () => {
+		setIsLoading(true);
+		window.ipcRenderer.send("add-chapter-data", chapters);
+	};
+
+	useEffect(() => {
+		const bookCreatedListener = (
+			_event: Electron.IpcRendererEvent,
+			response: IpcResponse<any>
+		) => {
+			const { code, error } = response;
+			if (code === "SUCCESS") {
+				setIsLoading(false);
+			} else {
+				console.error("Error in book-created: ", error);
+			}
+		};
+
+		window.ipcRenderer.on("book-created", bookCreatedListener);
+		return () => {
+			window.ipcRenderer.removeListener("book-created", bookCreatedListener);
+		};
+	}, []);
 
 	return (
 		<div className="section">
@@ -96,8 +122,23 @@ function AddChapter() {
 				>
 					Cancel
 				</button>
-				<button className="btn btn-success btn-sm">Create Audio Book</button>
+				<button
+					onClick={handleCreateAudioBook}
+					className="btn btn-success btn-sm"
+				>
+					Create Audio Book
+				</button>
 			</div>
+
+			{isLoading && (
+				<div className="loading-overlay">
+					<img
+						src={SpinnerSvg}
+						alt="Spinner Icon"
+						className="overlay-spinner spinner-svg"
+					/>
+				</div>
+			)}
 		</div>
 	);
 }

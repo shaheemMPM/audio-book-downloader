@@ -13,3 +13,8 @@ export interface UpdateMetaPayload {
 	author?: string;
 	userCover: string;
 }
+
+export interface Chapter {
+	name: string;
+	timestamp: string;
+}

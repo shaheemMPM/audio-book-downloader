@@ -1,10 +1,11 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "node:path";
 import getYoutubeInfo from "./src/youtube-info";
-import { UpdateMetaPayload, YouTubeInfo } from "./src/types";
+import { Chapter, UpdateMetaPayload, YouTubeInfo } from "./src/types";
 import downloadYoutubeAudio from "./src/youtube-download";
 import getMetaData from "./src/get-meta";
 import updateMetaData from "./src/update-meta";
+import createAudioBook from "./src/create-book";
 
 // The built directory structure
 //
@@ -126,6 +127,25 @@ function createWindow() {
 			};
 
 			event.sender.send("finish-update-meta", responseData);
+		}
+	});
+
+	ipcMain.on("add-chapter-data", async (event, chapters: Chapter[]) => {
+		try {
+			await createAudioBook(chapters);
+
+			const responseData = {
+				code: "SUCCESS",
+			};
+
+			event.sender.send("book-created", responseData);
+		} catch (error) {
+			const responseData = {
+				code: "FAILURE",
+				error,
+			};
+
+			event.sender.send("book-created", responseData);
 		}
 	});
 }
