@@ -12,3 +12,8 @@ export interface IpcResponse<T> {
 	data?: T;
 	error?: any;
 }
+
+export interface Chapter {
+	name: string;
+	timestamp: string;
+}

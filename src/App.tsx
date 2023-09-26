@@ -4,7 +4,7 @@ import Youtube from "./pages/youtube";
 import Mp3 from "./pages/mp3";
 import Mp4 from "./pages/mp4";
 import Meta from "./pages/meta";
-import Chapter from "./pages/chapter";
+import AddChapter from "./pages/chapter";
 
 function App() {
 	return (
@@ -14,7 +14,7 @@ function App() {
 			<Route path="/mp3" element={<Mp3 />} />
 			<Route path="/mp4" element={<Mp4 />} />
 			<Route path="/meta" element={<Meta />} />
-			<Route path="/chapter" element={<Chapter />} />
+			<Route path="/chapter" element={<AddChapter />} />
 		</Routes>
 	);
 }
